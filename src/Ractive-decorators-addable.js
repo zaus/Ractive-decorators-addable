@@ -159,7 +159,7 @@ var addableDecorator = (function (global, factory) {
 	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
 	addable.remText = 'Delete';
 	addable.remClass = 'btn delete';
-	addable.remStyle = false; // inner|child,next|sibling
+	addable.remStyle = 'inner'; // inner|child,next|sibling
 	addable.allAdd = false;
 
 	//#region ----- utilities ----------
@@ -200,8 +200,13 @@ var addableDecorator = (function (global, factory) {
 				else parent.appendChild(newNode);
 				break;
 			case 'inner':
-			default:
 				node.appendChild(newNode);
+				break;
+				// any selector
+			default:
+				var found = node.querySelector(style);
+				if (!found) throw new Error("Couldn't locate decorator addable 'style' to attach to in `node`");
+				found.appendChild(newNode);
 				break;
 		}
 	}
@@ -262,7 +267,7 @@ var addableDecorator = (function (global, factory) {
 		var source = ractive.get(sourceArray);
 		var current = ractive.get(sourceKeypath);
 
-		// make a copy of current
+		// make a copy of current; TODO: proper copy of array children
 		if (Array.isArray(current)) current = [];
 		else if (typeof (current) === "object") current = utils_extend({}, current);
 
