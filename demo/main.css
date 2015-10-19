@@ -157,6 +157,10 @@ footer {
 	margin: 0 0 0.5em 0;
 }
 
+#demo .btn i:after {border:1px solid black; border-radius:0.5em;display:inline-block;width:1em;height:1em;margin:0.2em 1em;font-weight:bold;color:white;text-align:center;}
+#demo .add i:after { content:' + ';background-color:green;border-color:darkgreen;}
+#demo .delete i:after { content:' - ';background-color:red;border-color:darkred;}
+
 a.forkme {
 	position: fixed;
 	left: 3.5em;

@@ -103,31 +103,62 @@
 
 	<!-- Demo template -->
 	<script id='demo-template' type='text/ractive'>
-		<div class='left'>
-			<h2>Try adding and removing items...</h2>
-			<ul class='reorderable browsers'>
-				{{#list}}
-					<li decorator='addable' style='background-image: url(demo/icons/{{icon}});'>
-						<span>{{name}}</span>
+
+		<div class='clearfix'>
+			<div class='left'>
+				<h2>Try adding and removing items...</h2>
+				<ul class='reorderable browsers'>
+					{{#list2}}
+					<li decorator='addable'>
+						<input type="text" value='{{.}}' />
 					</li>
-				{{/list}}
-			</ul>
+					{{/list2}}
+				</ul>
+			</div>
+
+			<div class='right'>
+				<h2>...it mirrors automatically</h2>
+				<ul class='browsers'>
+					{{#list2}}
+					<li>
+						<span>{{.}}</span>
+					</li>
+					{{/list2}}
+				</ul>
+			</div>
 		</div>
 
-		<div class='right'>
-			<h2>...it mirrors automatically</h2>
-			<ul class='browsers'>
-				{{#list}}
+		<hr />
+
+		<div class='clearfix'>
+			<div class='left'>
+				<h2>Try adding and removing items...</h2>
+				<ul class='reorderable browsers'>
+					{{#list}}
+					<li decorator='addable:{ elementName: "<a><i></i></a>", addText: "", remText: "", allAdd: true, addStyle: "inner" }' style='background-image: url(demo/icons/{{icon}});'>
+						<span>{{name}}</span>
+					</li>
+					{{/list}}
+				</ul>
+			</div>
+
+			<div class='right'>
+				<h2>...it mirrors automatically</h2>
+				<ul class='browsers'>
+					{{#list}}
 					<li style='background-image: url(demo/icons/{{icon}});'>
 						<span>{{name}}</span>
 					</li>
-				{{/list}}
-			</ul>
+					{{/list}}
+				</ul>
+			</div>
 		</div>
+
+
 	</script>
 
 	<!-- Dependencies -->
-	<script src='lib/Ractive-legacy.js'></script>
+	<script src='http://cdn.ractivejs.org/latest/ractive.js'></script> <!-- lib/Ractive-legacy.js? -->
 	<script src='Ractive-decorators-addable.js'></script>
 
 	<!-- Demo code -->

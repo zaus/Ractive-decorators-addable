@@ -22,7 +22,34 @@ Or, if you're using a module loader, require this module:
 require( 'Ractive-decorators-addable' );
 ```
 
-**plugin-specific instructions to go here...**
+Then use the decorator like so:
+
+	<!-- template -->
+	<ul>
+	    {{#list}}
+	    <li decorator='addable'>{{.}}</li>
+	    {{/list}}
+	</ul>
+
+	var ractive = new Ractive({
+	    el: myContainer,
+	    template: myTemplate,
+	    data: { list: [ 'Firefox', 'Chrome', 'Internet Explorer', 'Opera', 'Safari', 'Maxthon' ] }
+	});
+
+Or with inline configuration:
+
+	<ul>
+	    {{#list}}
+	    <li decorator='multi:{ sortable:true, addable:{ elementName: "<a><i></i></a>", addText: "", remText: "", allAdd: true, addStyle: "inner" } }'>
+	    {{/list}
+	</ul>
+
+Or with global configuration:
+
+	Ractive.decorators.addable.elementName = '<a><i></i></a>';
+	Ractive.decorators.addable.addText = '';
+	Ractive.decorators.addable.remText = '';
 
 
 
