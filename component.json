@@ -1,7 +1,7 @@
 {
-	"name": "ractive-decorators-sortable",
-	"repo": "RactiveJS/Ractive-decorators-sortable",
-	"description": "Ractive-decorators-sortable",
+	"name": "ractive-decorators-addable",
+	"repo": "RactiveJS/Ractive-decorators-addable",
+	"description": "Ractive-decorators-addable",
 	"version": "0.1.0",
 	"keywords": [],
 	"dependencies": {
@@ -9,8 +9,8 @@
 	},
 	"development": {},
 	"license": "MIT",
-	"main": "Ractive-decorators-sortable.js",
+	"main": "Ractive-decorators-addable.js",
 	"scripts": [
-		"Ractive-decorators-sortable.js"
+		"Ractive-decorators-addable.js"
 	]
 }

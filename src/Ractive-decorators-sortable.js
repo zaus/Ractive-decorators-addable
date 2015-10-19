@@ -1,11 +1,11 @@
 /*
 
-	Ractive-decorators-sortable
+	Ractive-decorators-addable
 	===========================
 
 	Version <%= VERSION %>.
 
-	This plugin adds a 'sortable' decorator to Ractive, which enables
+	This plugin adds a 'addable' decorator to Ractive, which enables
 	elements that correspond to array members to be re-ordered using
 	the HTML5 drag and drop API. Doing so will update the order
 	of the array.
@@ -21,20 +21,20 @@
 	Usage: Include this file on your page below Ractive, e.g:
 
 	    <script src='lib/Ractive.js'></script>
-	    <script src='lib/Ractive-decorators-sortable.js'></script>
+	    <script src='lib/Ractive-decorators-addable.js'></script>
 
 	Or, if you're using a module loader, require this module:
 
 	    // requiring the plugin will 'activate' it - no need to use
 	    // the return value
-	    require( 'Ractive-decorators-sortable' );
+	    require( 'Ractive-decorators-addable' );
 
 	Then use the decorator like so:
 
 	    <!-- template -->
 	    <ul>
 	      {{#list}}
-	        <li decorator='sortable'>{{.}}</li>
+	        <li decorator='addable'>{{.}}</li>
 	      {{/list}}
 	    </ul>
 
@@ -51,14 +51,14 @@
 
 	You can configure the class name like so:
 
-	    Ractive.decorators.sortable.targetClass = 'aDifferentClassName';
+	    Ractive.decorators.addable.targetClass = 'aDifferentClassName';
 
 	PS for an entertaining rant about the drag and drop API, visit
 	http://www.quirksmode.org/blog/archives/2009/09/the_html5_drag.html
 
 */
 
-var sortableDecorator = (function ( global, factory ) {
+var addableDecorator = (function ( global, factory ) {
 
 	'use strict';
 
@@ -78,14 +78,14 @@ var sortableDecorator = (function ( global, factory ) {
 	}
 
 	else {
-		throw new Error( 'Could not find Ractive! It must be loaded before the Ractive-decorators-sortable plugin' );
+		throw new Error( 'Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin' );
 	}
 
 }( typeof window !== 'undefined' ? window : this, function ( Ractive ) {
 
 	'use strict';
 
-	var sortable,
+	var addable,
 		ractive,
 		sourceKeypath,
 		sourceArray,
@@ -96,7 +96,7 @@ var sortableDecorator = (function ( global, factory ) {
 		preventDefault,
 		errorMessage;
 
-	sortable = function ( node ) {
+	addable = function ( node ) {
 		node.draggable = true;
 
 		node.addEventListener( 'dragstart', dragstartHandler, false );
@@ -119,9 +119,9 @@ var sortableDecorator = (function ( global, factory ) {
 		};
 	};
 
-	sortable.targetClass = 'droptarget';
+	addable.targetClass = 'droptarget';
 
-	errorMessage = 'The sortable decorator only works with elements that correspond to array members';
+	errorMessage = 'The addable decorator only works with elements that correspond to array members';
 
 	dragstartHandler = function ( event ) {
 		var storage = this._ractive, lastDotIndex;
@@ -175,7 +175,7 @@ var sortableDecorator = (function ( global, factory ) {
 
 		// if it's the same index, add droptarget class then abort
 		if ( targetIndex === sourceIndex ) {
-			this.classList.add( sortable.targetClass );
+			this.classList.add( addable.targetClass );
 			return;
 		}
 
@@ -192,17 +192,17 @@ var sortableDecorator = (function ( global, factory ) {
 	};
 
 	removeTargetClass = function () {
-		this.classList.remove( sortable.targetClass );
+		this.classList.remove( addable.targetClass );
 	};
 
 	preventDefault = function ( event ) { event.preventDefault(); };
 
-	Ractive.decorators.sortable = sortable;
+	Ractive.decorators.addable = addable;
 	
-	return sortable
+	return addable
 }));
 
 // Common JS (i.e. browserify) environment
 if ( typeof module !== 'undefined' && module.exports) {
-	module.exports = sortableDecorator
+	module.exports = addableDecorator
 }

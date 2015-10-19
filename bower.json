@@ -1,8 +1,8 @@
 {
-	"name": "ractive-decorators-sortable",
+	"name": "ractive-decorators-addable",
 	"version": "0.1.0",
 	"author": "Rich Harris",
-	"main": "Ractive-decorators-sortable.js",
+	"main": "Ractive-decorators-addable.js",
 	"ignore": [
 		"**/.*",
 		"src",

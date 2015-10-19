@@ -2,7 +2,7 @@
 <html lang='en-GB'>
 <head>
 	<meta charset='utf-8'>
-	<title>Ractive.js sortable decorator plugin</title>
+	<title>Ractive.js addable decorator plugin</title>
 
 	<!-- CSS -->
 	<link href='http://fonts.googleapis.com/css?family=Voltaire' rel='stylesheet' type='text/css'>
@@ -69,24 +69,24 @@
 <body>
 
 	<!-- if the project is on GitHub, add a fork me button! -->
-	<a class='forkme' href='https://github.com/RactiveJS/Ractive-decorators-sortable'>Fork me on GitHub</a>
+	<a class='forkme' href='https://github.com/RactiveJS/Ractive-decorators-addable'>Fork me on GitHub</a>
 
 	<header>
-		<h1>Ractive.js sortable decorator plugin</h1>
+		<h1>Ractive.js addable decorator plugin</h1>
 		<p class='strap'>
-			<span class='download'>download: <a href='https://raw.github.com/RactiveJS/Ractive-decorators-sortable/master/Ractive-decorators-sortable.js'>Ractive-decorators-sortable.js</a></span>
+			<span class='download'>download: <a href='https://raw.github.com/RactiveJS/Ractive-decorators-addable/master/Ractive-decorators-addable.js'>Ractive-decorators-addable.js</a></span>
 			<span class='more-plugins'>more plugins at <a href='http://ractivejs.org/plugins'>ractivejs.org/plugins</a></span>
 		</p>
 	</header>
 
 	<main>
-		<p>This plugin adds a <code>sortable</code> decorator to Ractive, which enables elements that correspond to array members to be re-ordered using the HTML5 drag and drop API. Doing so will update the order of the array.</p>
+		<p>This plugin adds a <code>addable</code> decorator to Ractive, which enables elements that correspond to array members to be re-ordered using the HTML5 drag and drop API. Doing so will update the order of the array.</p>
 
 		<p>When the user drags the source element over a target element, the target element will have a class name added to it. This allows you to render the target differently (e.g. hide the text, add a dashed border, whatever). By default this class name is 'droptarget'.</p>
 		
 		<p>You can configure the class name with the following:</p>
 
-		<pre class='prettyprint lang-js'>Ractive.decorators.sortable.targetClass = 'aDifferentClassName';</pre>
+		<pre class='prettyprint lang-js'>Ractive.decorators.addable.targetClass = 'aDifferentClassName';</pre>
 
 		<div id='demo' class='clearfix'></div>
 
@@ -105,7 +105,7 @@
 			<h2>Try reordering items...</h2>
 			<ul class='reorderable browsers'>
 				{{#list}}
-					<li decorator='sortable' style='background-image: url(demo/icons/{{icon}});'>
+					<li decorator='addable' style='background-image: url(demo/icons/{{icon}});'>
 						<span>{{name}}</span>
 					</li>
 				{{/list}}
@@ -126,7 +126,7 @@
 
 	<!-- Dependencies -->
 	<script src='lib/Ractive-legacy.js'></script>
-	<script src='Ractive-decorators-sortable.js'></script>
+	<script src='Ractive-decorators-addable.js'></script>
 
 	<!-- Demo code -->
 	<script id='demo-code'>

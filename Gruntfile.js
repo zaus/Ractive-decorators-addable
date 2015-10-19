@@ -23,8 +23,8 @@ module.exports = function ( grunt ) {
 
 		concat: {
 			bundle: {
-				src: 'src/Ractive-decorators-sortable.js',
-				dest: 'tmp/Ractive-decorators-sortable.js'
+				src: 'src/Ractive-decorators-addable.js',
+				dest: 'tmp/Ractive-decorators-addable.js'
 			},
 			options: {
 				process: {
@@ -41,8 +41,8 @@ module.exports = function ( grunt ) {
 
 		uglify: {
 			bundle: {
-				src: 'tmp/Ractive-decorators-sortable.js',
-				dest: 'tmp/Ractive-decorators-sortable.min.js'
+				src: 'tmp/Ractive-decorators-addable.js',
+				dest: 'tmp/Ractive-decorators-addable.min.js'
 			}
 		},
 

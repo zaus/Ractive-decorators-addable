@@ -1,4 +1,4 @@
-// Ractive-decorators-sortable tests
+// Ractive-decorators-addable tests
 // ===========================
 
 (function () {
