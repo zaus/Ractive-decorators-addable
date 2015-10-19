@@ -121,12 +121,12 @@ var addableDecorator = (function (global, factory) {
 
 		return {
 			teardown: function () {
-				btnRemove.removeEventListener('click', remHandler, false);
-				btnAdd.removeEventListener('click', addHandler, false);
+				btnRemove.removeEventListener('click', remHandler, false); // TODO: actually remove the handler fn?  do we even need to if btnRemove is deleted?
 
 				//node.removeChild(btnRemove); // already gone by this point
 				// TODO: how to handle the last one?  i.e. how to handle the add button
 				/*
+				btnAdd.removeEventListener('click', addHandler, false);
 				btnAdd.parentNode.removeChild(btnAdd);
 
 				node.parentNode.className = node.parentNode.className.replace(' ' + options.className, '');
