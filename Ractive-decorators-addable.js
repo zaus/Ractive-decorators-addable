@@ -3,12 +3,10 @@
 	Ractive-decorators-addable
 	===========================
 
-	Version 0.1.0.
+	Version <%= VERSION %>.
 
 	This plugin adds a 'addable' decorator to Ractive, which enables
-	elements that correspond to array members to be re-ordered using
-	the HTML5 drag and drop API. Doing so will update the order
-	of the array.
+	elements that correspond to array members to be added and removed.
 
 	==========================
 
@@ -43,22 +41,9 @@
 	      template: myTemplate,
 	      data: { list: [ 'Firefox', 'Chrome', 'Internet Explorer', 'Opera', 'Safari', 'Maxthon' ] }
 	    });
-
-	When the user drags the source element over a target element, the
-	target element will have a class name added to it. This allows you
-	to render the target differently (e.g. hide the text, add a dashed
-	border, whatever). By default this class name is 'droptarget'.
-
-	You can configure the class name like so:
-
-	    Ractive.decorators.addable.targetClass = 'aDifferentClassName';
-
-	PS for an entertaining rant about the drag and drop API, visit
-	http://www.quirksmode.org/blog/archives/2009/09/the_html5_drag.html
-
 */
 
-(function ( global, factory ) {
+var addableDecorator = (function ( global, factory ) {
 
 	'use strict';
 
@@ -81,52 +66,164 @@
 		throw new Error( 'Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin' );
 	}
 
-}( typeof window !== 'undefined' ? window : this, function ( Ractive ) {
+}( typeof window !== 'undefined' ? window : this, function ( Ractive/*, $ */ ) {
 
 	'use strict';
 
-	var addable,
+	var log, utils_extend, autoHandler, styleAdd, btnCreate,
+
+		addable,
 		ractive,
 		sourceKeypath,
 		sourceArray,
 		sourceIndex,
-		dragstartHandler,
-		dragenterHandler,
-		removeTargetClass,
-		preventDefault,
+
+		btnAdd,
+		btnRemove,
+
+		addHandler,
+		remHandler,
+
 		errorMessage;
 
-	addable = function ( node ) {
-		node.draggable = true;
+	addable = function (node, options) {
+		//node.addable = true;
 
-		node.addEventListener( 'dragstart', dragstartHandler, false );
-		node.addEventListener( 'dragenter', dragenterHandler, false );
-		node.addEventListener( 'dragleave', removeTargetClass, false );
-		node.addEventListener( 'drop', removeTargetClass, false );
+		options = utils_extend({}, addable, options);
 
-		// necessary to prevent animation where ghost element returns
-		// to its (old) home
-		node.addEventListener( 'dragover', preventDefault, false );
+		//log('addable init', options);
 
+		// add interactive ui
+		var parent = node.parentNode;
+		if (!parent._addable) parent._addable = false; // {} for more options
+
+		// maybe only one add button
+		if (options.allAdd || !parent._addable) {
+			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass);
+			
+			// where to add?
+			if (options.allAdd) {
+				styleAdd(options.addStyle, btnAdd, node, parent);
+			}
+			else if (!parent._addable) {
+				styleAdd(options.addStyle || 'append', btnAdd, node, parent);
+
+				// might as well set parent property while we're here once
+				parent._addable = true;
+				parent.className = parent.className + ' ' + options.className;
+			}
+		}
+
+		btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass);
+
+		// try to append, otherwise add
+		styleAdd(options.remStyle, btnRemove, node, parent);
+		
 		return {
 			teardown: function () {
-				node.removeEventListener( 'dragstart', dragstartHandler, false );
-				node.removeEventListener( 'dragenter', dragenterHandler, false );
-				node.removeEventListener( 'dragleave', removeTargetClass, false );
-				node.removeEventListener( 'drop', removeTargetClass, false );
-				node.removeEventListener( 'dragover', preventDefault, false );
+				btnRemove.removeEventListener('click', remHandler, false);
+				btnAdd.removeEventListener('click', addHandler, false);
+
+				//node.removeChild(btnRemove); // already gone by this point
+				// TODO: how to handle the last one?  i.e. how to handle the add button
+				/*
+				btnAdd.parentNode.removeChild(btnAdd);
+
+				node.parentNode.className = node.parentNode.className.replace(' ' + options.className, '');
+				delete node._addable;
+				*/
 			}
 		};
 	};
 
-	addable.targetClass = 'droptarget';
+	addable.className = 'addable';
+
+	addable.elementName = 'span';
+	addable.addText = 'Add';
+	addable.addClass = 'btn add';
+	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
+	addable.remText = 'Delete';
+	addable.remClass = 'btn delete';
+	addable.remStyle = false; // inner|child,next|sibling
+	addable.allAdd = false;
+
+	//#region ----- utilities ----------
+	btnCreate = function (el, node, handler, text, clss) {
+
+		// from html -- http://stackoverflow.com/a/494348/1037948
+		var btn;
+		if (el[0] == '<') {
+			btn = document.createElement('p');
+			btn.innerHTML = el;
+			btn = btn.firstChild;
+		}
+		else btn = document.createElement(el);
+
+		btn.addEventListener('click', autoHandler(node, handler), false);
+		btn.innerHTML += text;
+		btn.className = clss;
+		return btn;
+	}
+	styleAdd = function (style, newNode, node, parent) {
+		/// <summary>
+		/// Add the <paramref name="newNode"/> according to <paramref name="style"/> to either the <paramref name="node"/> or <paramref name="parent"/>
+		/// </summary>
+		/// <param name="style">How to add it: append, prepend, next, inner</param>
+		/// <param name="newNode">The node to insert</param>
+		/// <param name="node">The source node</param>
+		/// <param name="parent">The <paramref name="node"/>'s parent</param>
+		
+		switch (style) {
+			case 'append':
+				parent.appendChild(btnAdd);
+				break;
+			case 'prepend':
+				parent.insertBefore(btnAdd, node);
+				break;
+			case 'next':
+				if (node.nextSibling) parent.insertBefore(newNode, node.nextSibling);
+				else parent.appendChild(newNode);
+				break;
+			case 'inner':
+			default:
+				node.appendChild(newNode);
+				break;
+		}
+	}
+	utils_extend = function () {
+
+		return function (target) {
+			var prop, source, sources = Array.prototype.slice.call(arguments, 1);
+			while (source = sources.shift()) {
+				for (prop in source) {
+					if (source.hasOwnProperty(prop)) {
+						target[prop] = source[prop];
+					}
+				}
+			}
+			return target;
+		};
+	}();
+	if (!Array.isArray) {
+		Array.isArray = function(arg) {
+			return Object.prototype.toString.call(arg) === '[object Array]';
+		};
+	}
+	log = function () {
+		if (!console || !console.log) return;
+		console.log.apply(console, arguments);
+	}
+	autoHandler = function(node, handler) {
+		return function(event) { return handler.apply(node, [event]); }
+	}
+	//#endregion ----- utilities ----------
 
 	errorMessage = 'The addable decorator only works with elements that correspond to array members';
 
-	dragstartHandler = function ( event ) {
+	addHandler = function ( event ) {
 		var storage = this._ractive, lastDotIndex;
 
-		sourceKeypath = storage.keypath;
+		sourceKeypath = storage.keypath.str || storage.keypath; // 0.7.3?  could hit other properties for already parsed
 
 		// this decorator only works with array members!
 		lastDotIndex = sourceKeypath.lastIndexOf( '.' );
@@ -142,61 +239,63 @@
 			throw new Error( errorMessage );
 		}
 
-		event.dataTransfer.setData( 'foo', true ); // enables dragging in FF. go figure
+		log('adding', sourceArray, sourceIndex, sourceKeypath);
 
 		// keep a reference to the Ractive instance that 'owns' this data and this element
 		ractive = storage.root;
-	};
 
-	dragenterHandler = function () {
-		var targetKeypath, lastDotIndex, targetArray, targetIndex, array, source;
+		var source = ractive.get(sourceArray);
+		var current = ractive.get(sourceKeypath);
 
-		// If we strayed into someone else's territory, abort
-		if ( this._ractive.root !== ractive ) {
-			return;
+		// make a copy of current
+		if (Array.isArray(current)) current = [];
+		else if(typeof(current) === "object") current = utils_extend({}, current);
+
+		if (Array.isArray(source)) ractive.splice(sourceArray, sourceIndex, 0, current);
+		else {
+			source[sourceIndex + 1] = current;
+			ractive.update(); // because we changed the data directly
 		}
+	};
+	remHandler = function (event) {
+		var storage = this._ractive, lastDotIndex;
 
-		targetKeypath = this._ractive.keypath;
+		sourceKeypath = storage.keypath.str || storage.keypath;
 
 		// this decorator only works with array members!
-		lastDotIndex = targetKeypath.lastIndexOf( '.' );
+		lastDotIndex = sourceKeypath.lastIndexOf('.');
 
-		if ( lastDotIndex === -1 ) {
-			throw new Error( errorMessage );
+		if (lastDotIndex === -1) {
+			throw new Error(errorMessage);
 		}
 
-		targetArray = targetKeypath.substr( 0, lastDotIndex );
-		targetIndex = +( targetKeypath.substring( lastDotIndex + 1 ) );
+		sourceArray = sourceKeypath.substr(0, lastDotIndex);
+		sourceIndex = +(sourceKeypath.substring(lastDotIndex + 1));
 
-		// if we're dealing with a different array, abort
-		if ( targetArray !== sourceArray ) {
-			return;
+		if (isNaN(sourceIndex)) {
+			throw new Error(errorMessage);
 		}
 
-		// if it's the same index, add droptarget class then abort
-		if ( targetIndex === sourceIndex ) {
-			this.classList.add( addable.targetClass );
-			return;
+		log('removing', sourceArray, sourceIndex, sourceKeypath);
+
+		// keep a reference to the Ractive instance that 'owns' this data and this element
+		ractive = storage.root;
+
+		var source = ractive.get(sourceArray);
+
+		if (Array.isArray(source)) ractive.splice(sourceArray, sourceIndex, 1);
+		else {
+			delete source[sourceIndex];
+			ractive.update(); // because we changed the data directly
 		}
-
-		array = ractive.get( sourceArray );
-
-		// remove source from array
-		source = array.splice( sourceIndex, 1 )[0];
-
-		// the target index is now the source index...
-		sourceIndex = targetIndex;
-
-		// add source back to array in new location
-		array.splice( sourceIndex, 0, source );
 	};
-
-	removeTargetClass = function () {
-		this.classList.remove( addable.targetClass );
-	};
-
-	preventDefault = function ( event ) { event.preventDefault(); };
-
+	
+	// expose
 	Ractive.decorators.addable = addable;
-
+	return addable;
 }));
+
+// Common JS (i.e. browserify) environment
+if ( typeof module !== 'undefined' && module.exports) {
+	module.exports = addableDecorator;
+}
