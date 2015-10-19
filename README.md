@@ -31,4 +31,4 @@ License
 
 Copyright (c) 2015 zaus. Licensed MIT
 
-Forked from ractive-addable plugin which was created with the [Ractive.js plugin template](https://github.com/RactiveJS/Plugin-template) for Grunt.
+Forked from [ractive-addable](https://github.com/RactiveJS/Ractive-decorators-sortable/) plugin which was created with the [Ractive.js plugin template](https://github.com/RactiveJS/Plugin-template) for Grunt.

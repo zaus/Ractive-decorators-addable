@@ -80,13 +80,15 @@
 	</header>
 
 	<main>
-		<p>This plugin adds a <code>addable</code> decorator to Ractive, which enables elements that correspond to array members to be re-ordered using the HTML5 drag and drop API. Doing so will update the order of the array.</p>
-
-		<p>When the user drags the source element over a target element, the target element will have a class name added to it. This allows you to render the target differently (e.g. hide the text, add a dashed border, whatever). By default this class name is 'droptarget'.</p>
+		<p>This plugin adds a <code>addable</code> decorator to Ractive, which enables elements that correspond to array members to be added and removed.</p>
 		
-		<p>You can configure the class name with the following:</p>
+		<!--
+			<p>When the user drags the source element over a target element, the target element will have a class name added to it. This allows you to render the target differently (e.g. hide the text, add a dashed border, whatever). By default this class name is 'droptarget'.</p>
+		
+			<p>You can configure the class name with the following:</p>
 
-		<pre class='prettyprint lang-js'>Ractive.decorators.addable.targetClass = 'aDifferentClassName';</pre>
+			<pre class='prettyprint lang-js'>Ractive.decorators.addable.targetClass = 'aDifferentClassName';</pre>
+		-->
 
 		<div id='demo' class='clearfix'></div>
 
@@ -96,13 +98,13 @@
 
 	<!-- add additional info such as your homepage here, if you want -->
 	<footer>
-		<p>Copyright &copy; 2013 Rich Harris. Licensed MIT</p>
+		<p>Copyright &copy; 2015 @zaus. Licensed MIT</p>
 	</footer>
 
 	<!-- Demo template -->
 	<script id='demo-template' type='text/ractive'>
 		<div class='left'>
-			<h2>Try reordering items...</h2>
+			<h2>Try adding and removing items...</h2>
 			<ul class='reorderable browsers'>
 				{{#list}}
 					<li decorator='addable' style='background-image: url(demo/icons/{{icon}});'>
@@ -141,7 +143,8 @@
 					{ name: 'Opera',             icon: 'opera_64x64.png'   },
 					{ name: 'Maxthon',           icon: 'maxthon_64x64.png' },
 					{ name: 'Internet Explorer', icon: 'ie10_64x64.png'    }
-				]
+				],
+				list2: [ "foo", "bar", "bast", "quux", "klorem" ]
 			}
 		});
 	</script>

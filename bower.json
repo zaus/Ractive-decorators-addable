@@ -1,7 +1,7 @@
 {
 	"name": "ractive-decorators-addable",
 	"version": "0.1.0",
-	"author": "Rich Harris",
+	"author": "zaus",
 	"main": "Ractive-decorators-addable.js",
 	"ignore": [
 		"**/.*",
