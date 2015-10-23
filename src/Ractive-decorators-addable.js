@@ -114,22 +114,18 @@ var addableDecorator = (function (global, factory) {
 
 		// maybe only one add button
 		if (options.allAdd || !parent._addable) {
-			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass);
-
-			// where to add?
-			if (options.allAdd) {
-				styleAdd(options.addStyle, btnAdd, node, parent);
-			}
-			else if (!parent._addable) {
-				styleAdd(options.addStyle || 'append', btnAdd, node, parent);
-
-				// might as well set parent property while we're here once
-				parent._addable = true;
-				parent.className = parent.className + ' ' + options.className;
-			}
+			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass, options.addTitle);
+			
+			styleAdd(options.addStyle || 'append', btnAdd, node, parent);
 		}
 
-		btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass);
+		// end 'once' behavior
+		if (!parent._addable) {
+			parent.className = parent.className + ' ' + options.className;
+			parent._addable = true;
+		}
+
+		btnRemove = btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass, options.remTitle);
 
 		// try to append, otherwise add
 		styleAdd(options.remStyle, btnRemove, node, parent);
@@ -154,16 +150,16 @@ var addableDecorator = (function (global, factory) {
 	addable.className = 'addable';
 
 	addable.elementName = 'span';
-	addable.addText = 'Add';
+	addable.addTitle = addable.addText = 'Add';
 	addable.addClass = 'btn add';
 	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
-	addable.remText = 'Delete';
+	addable.remTitle = addable.remText = 'Delete';
 	addable.remClass = 'btn delete';
 	addable.remStyle = 'inner'; // inner|child,next|sibling
 	addable.allAdd = false;
 
 	//#region ----- utilities ----------
-	btnCreate = function (el, node, handler, text, clss) {
+	btnCreate = function (el, node, handler, text, clss, title) {
 
 		// from html -- http://stackoverflow.com/a/494348/1037948
 		var btn;
@@ -177,6 +173,7 @@ var addableDecorator = (function (global, factory) {
 		btn.addEventListener('click', autoHandler(node, handler), false);
 		btn.innerHTML += text;
 		btn.className = clss;
+		btn.title = title || text;
 		return btn;
 	}
 	styleAdd = function (style, newNode, node, parent) {
