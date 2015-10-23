@@ -115,18 +115,14 @@ var addableDecorator = (function (global, factory) {
 		// maybe only one add button
 		if (options.allAdd || !parent._addable) {
 			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass, options.addTitle);
+			
+			styleAdd(options.addStyle || 'append', btnAdd, node, parent);
+		}
 
-			// where to add?
-			if (options.allAdd) {
-				styleAdd(options.addStyle, btnAdd, node, parent);
-			}
-			else if (!parent._addable) {
-				styleAdd(options.addStyle || 'append', btnAdd, node, parent);
-
-				// might as well set parent property while we're here once
-				parent._addable = true;
-				parent.className = parent.className + ' ' + options.className;
-			}
+		// end 'once' behavior
+		if (!parent._addable) {
+			parent.className = parent.className + ' ' + options.className;
+			parent._addable = true;
 		}
 
 		btnRemove = btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass, options.remTitle);
