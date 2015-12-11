@@ -207,6 +207,7 @@ var addableDecorator = (function (global, factory) {
 			default:
 				// root "selector" hack
 				if(style.charAt(0) == addable.rootSelector) {
+					style = style.substring(1);
 					node = document;
 				}
 				// parent "selector" hack
