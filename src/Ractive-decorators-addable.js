@@ -67,12 +67,12 @@ var addableDecorator = (function (global, factory) {
 		factory(require('Ractive'));
 	}
 
-		// AMD?
+	// AMD?
 	else if (typeof define === 'function' && define.amd) {
 		define(['Ractive'], factory);
 	}
 
-		// browser global
+	// browser global
 	else if (global.Ractive) {
 		factory(global.Ractive);
 	}
@@ -152,10 +152,10 @@ var addableDecorator = (function (global, factory) {
 	addable.elementName = 'span';
 	addable.addTitle = addable.addText = 'Add';
 	addable.addClass = 'btn add';
-	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
+	addable.addStyle = 'prepend'; // selector or 'append', 'prepend'; copy? -- UI doesn't really respect this when no more elements left
 	addable.remTitle = addable.remText = 'Delete';
 	addable.remClass = 'btn delete';
-	addable.remStyle = 'inner'; // inner|child,next|sibling
+	addable.remStyle = 'inner'; // selector or inner|child,next|sibling
 	addable.allAdd = false;
 
 	//#region ----- utilities ----------
@@ -202,7 +202,7 @@ var addableDecorator = (function (global, factory) {
 				// any selector
 			default:
 				var found = node.querySelector(style);
-				if (!found) throw new Error("Couldn't locate decorator addable 'style' to attach to in `node`");
+				if (!found) throw new Error("Couldn't locate decorator addable 'style' (" + style + ") to attach to in `node`");
 				found.appendChild(newNode);
 				break;
 		}

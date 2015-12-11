@@ -3,7 +3,7 @@
 	Ractive-decorators-addable
 	===========================
 
-	Version <%= VERSION %>.
+	Version 0.1.2.
 
 	This plugin adds a 'addable' decorator to Ractive, which enables
 	elements that correspond to array members to be added and removed.
@@ -41,32 +41,47 @@
 	      template: myTemplate,
 	      data: { list: [ 'Firefox', 'Chrome', 'Internet Explorer', 'Opera', 'Safari', 'Maxthon' ] }
 	    });
+
+	Or with inline configuration:
+
+	    <ul>
+	    	{{#list}}
+	    	<li decorator='multi:{ sortable:true, addable:{ elementName: "<a><i></i></a>", addText: "", remText: "", allAdd: true, addStyle: "inner" } }'>
+	    	{{/list}
+	    </ul>
+
+	Or with global configuration:
+
+	    Ractive.decorators.addable.elementName = '<a><i></i></a>';
+	    Ractive.decorators.addable.addText = '';
+	    Ractive.decorators.addable.remText = '';
+
 */
 
-var addableDecorator = (function ( global, factory ) {
+var addableDecorator = (function (global, factory) {
 
 	'use strict';
 
 	// Common JS (i.e. browserify) environment
-	if ( typeof module !== 'undefined' && module.exports && typeof require === 'function' ) {
-		factory( require( 'Ractive' ) );
+	if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
+		factory(require('Ractive'));
 	}
 
 	// AMD?
-	else if ( typeof define === 'function' && define.amd ) {
-		define([ 'Ractive' ], factory );
+	else if (typeof define === 'function' && define.amd) {
+		define(['Ractive'], factory);
 	}
 
 	// browser global
-	else if ( global.Ractive ) {
-		factory( global.Ractive );
+	else if (global.Ractive) {
+		factory(global.Ractive);
 	}
 
 	else {
-		throw new Error( 'Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin' );
+		throw new Error('Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin');
 	}
 
-}( typeof window !== 'undefined' ? window : this, function ( Ractive/*, $ */ ) {
+}(typeof window !== 'undefined' ? window : this, function (Ractive/*, $ */) {
 
 	'use strict';
 
@@ -110,19 +125,19 @@ var addableDecorator = (function ( global, factory ) {
 			parent._addable = true;
 		}
 
-		btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass);
+		btnRemove = btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass, options.remTitle);
 
 		// try to append, otherwise add
 		styleAdd(options.remStyle, btnRemove, node, parent);
-		
+
 		return {
 			teardown: function () {
-				btnRemove.removeEventListener('click', remHandler, false);
-				btnAdd.removeEventListener('click', addHandler, false);
+				btnRemove.removeEventListener('click', remHandler, false); // TODO: actually remove the handler fn?  do we even need to if btnRemove is deleted?
 
 				//node.removeChild(btnRemove); // already gone by this point
 				// TODO: how to handle the last one?  i.e. how to handle the add button
 				/*
+				btnAdd.removeEventListener('click', addHandler, false);
 				btnAdd.parentNode.removeChild(btnAdd);
 
 				node.parentNode.className = node.parentNode.className.replace(' ' + options.className, '');
@@ -135,16 +150,16 @@ var addableDecorator = (function ( global, factory ) {
 	addable.className = 'addable';
 
 	addable.elementName = 'span';
-	addable.addText = 'Add';
+	addable.addTitle = addable.addText = 'Add';
 	addable.addClass = 'btn add';
-	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
-	addable.remText = 'Delete';
+	addable.addStyle = 'prepend'; // selector or 'append', 'prepend'; copy? -- UI doesn't really respect this when no more elements left
+	addable.remTitle = addable.remText = 'Delete';
 	addable.remClass = 'btn delete';
-	addable.remStyle = false; // inner|child,next|sibling
+	addable.remStyle = 'inner'; // selector or inner|child,next|sibling
 	addable.allAdd = false;
 
 	//#region ----- utilities ----------
-	btnCreate = function (el, node, handler, text, clss) {
+	btnCreate = function (el, node, handler, text, clss, title) {
 
 		// from html -- http://stackoverflow.com/a/494348/1037948
 		var btn;
@@ -158,6 +173,7 @@ var addableDecorator = (function ( global, factory ) {
 		btn.addEventListener('click', autoHandler(node, handler), false);
 		btn.innerHTML += text;
 		btn.className = clss;
+		btn.title = title || text;
 		return btn;
 	}
 	styleAdd = function (style, newNode, node, parent) {
@@ -168,7 +184,7 @@ var addableDecorator = (function ( global, factory ) {
 		/// <param name="newNode">The node to insert</param>
 		/// <param name="node">The source node</param>
 		/// <param name="parent">The <paramref name="node"/>'s parent</param>
-		
+
 		switch (style) {
 			case 'append':
 				parent.appendChild(btnAdd);
@@ -181,8 +197,13 @@ var addableDecorator = (function ( global, factory ) {
 				else parent.appendChild(newNode);
 				break;
 			case 'inner':
-			default:
 				node.appendChild(newNode);
+				break;
+				// any selector
+			default:
+				var found = node.querySelector(style);
+				if (!found) throw new Error("Couldn't locate decorator addable 'style' (" + style + ") to attach to in `node`");
+				found.appendChild(newNode);
 				break;
 		}
 	}
@@ -201,7 +222,7 @@ var addableDecorator = (function ( global, factory ) {
 		};
 	}();
 	if (!Array.isArray) {
-		Array.isArray = function(arg) {
+		Array.isArray = function (arg) {
 			return Object.prototype.toString.call(arg) === '[object Array]';
 		};
 	}
@@ -209,30 +230,30 @@ var addableDecorator = (function ( global, factory ) {
 		if (!console || !console.log) return;
 		console.log.apply(console, arguments);
 	}
-	autoHandler = function(node, handler) {
-		return function(event) { return handler.apply(node, [event]); }
+	autoHandler = function (node, handler) {
+		return function (event) { return handler.apply(node, [event]); }
 	}
 	//#endregion ----- utilities ----------
 
 	errorMessage = 'The addable decorator only works with elements that correspond to array members';
 
-	addHandler = function ( event ) {
+	addHandler = function (event) {
 		var storage = this._ractive, lastDotIndex;
 
 		sourceKeypath = storage.keypath.str || storage.keypath; // 0.7.3?  could hit other properties for already parsed
 
 		// this decorator only works with array members!
-		lastDotIndex = sourceKeypath.lastIndexOf( '.' );
+		lastDotIndex = sourceKeypath.lastIndexOf('.');
 
-		if ( lastDotIndex === -1 ) {
-			throw new Error( errorMessage );
+		if (lastDotIndex === -1) {
+			throw new Error(errorMessage);
 		}
 
-		sourceArray = sourceKeypath.substr( 0, lastDotIndex );
-		sourceIndex = +( sourceKeypath.substring( lastDotIndex + 1 ) );
+		sourceArray = sourceKeypath.substr(0, lastDotIndex);
+		sourceIndex = +(sourceKeypath.substring(lastDotIndex + 1));
 
-		if ( isNaN( sourceIndex ) ) {
-			throw new Error( errorMessage );
+		if (isNaN(sourceIndex)) {
+			throw new Error(errorMessage);
 		}
 
 		log('adding', sourceArray, sourceIndex, sourceKeypath);
@@ -243,9 +264,9 @@ var addableDecorator = (function ( global, factory ) {
 		var source = ractive.get(sourceArray);
 		var current = ractive.get(sourceKeypath);
 
-		// make a copy of current
+		// make a copy of current; TODO: proper copy of array children
 		if (Array.isArray(current)) current = [];
-		else if(typeof(current) === "object") current = utils_extend({}, current);
+		else if (typeof (current) === "object") current = utils_extend({}, current);
 
 		if (Array.isArray(source)) ractive.splice(sourceArray, sourceIndex, 0, current);
 		else {
@@ -285,13 +306,13 @@ var addableDecorator = (function ( global, factory ) {
 			ractive.update(); // because we changed the data directly
 		}
 	};
-	
+
 	// expose
 	Ractive.decorators.addable = addable;
 	return addable;
 }));
 
 // Common JS (i.e. browserify) environment
-if ( typeof module !== 'undefined' && module.exports) {
+if (typeof module !== 'undefined' && module.exports) {
 	module.exports = addableDecorator;
 }
