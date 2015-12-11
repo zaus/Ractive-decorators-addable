@@ -128,7 +128,7 @@ var addableDecorator = (function (global, factory) {
 		btnRemove = btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass, options.remTitle);
 
 		// try to append, otherwise add
-		styleAdd(options.remStyle, btnRemove, node, parent);
+		styleAdd(options.remStyle || 'inner', btnRemove, node, parent);
 
 		return {
 			teardown: function () {
@@ -157,6 +157,10 @@ var addableDecorator = (function (global, factory) {
 	addable.remClass = 'btn delete';
 	addable.remStyle = 'inner'; // selector or inner|child,next|sibling
 	addable.allAdd = false;
+
+	// style selector "hacks" for navigating up the DOM
+	addable.rootSelector = '$';
+	addable.parentSelector = '^';
 
 	//#region ----- utilities ----------
 	btnCreate = function (el, node, handler, text, clss, title) {
@@ -201,6 +205,15 @@ var addableDecorator = (function (global, factory) {
 				break;
 				// any selector
 			default:
+				// root "selector" hack
+				if(style.charAt(0) == addable.rootSelector) {
+					node = document;
+				}
+				// parent "selector" hack
+				else while (style.charAt(0) == addable.parentSelector) {
+					style = style.substring(1);
+					node = node.parentNode;
+				}
 				var found = node.querySelector(style);
 				if (!found) throw new Error("Couldn't locate decorator addable 'style' (" + style + ") to attach to in `node`");
 				found.appendChild(newNode);
