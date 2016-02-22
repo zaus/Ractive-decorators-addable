@@ -58,30 +58,30 @@
 
 */
 
-var addableDecorator = (function (global, factory) {
+var addableDecorator = (function ( global, factory ) {
 
 	'use strict';
 
 	// Common JS (i.e. browserify) environment
-	if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
-		factory(require('Ractive'));
+	if ( typeof module !== 'undefined' && module.exports && typeof require === 'function' ) {
+		factory( require( 'Ractive' ) );
 	}
 
 	// AMD?
-	else if (typeof define === 'function' && define.amd) {
-		define(['Ractive'], factory);
+	else if ( typeof define === 'function' && define.amd ) {
+		define([ 'Ractive' ], factory );
 	}
 
 	// browser global
-	else if (global.Ractive) {
-		factory(global.Ractive);
+	else if ( global.Ractive ) {
+		factory( global.Ractive );
 	}
 
 	else {
-		throw new Error('Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin');
+		throw new Error( 'Could not find Ractive! It must be loaded before the Ractive-decorators-addable plugin' );
 	}
 
-}(typeof window !== 'undefined' ? window : this, function (Ractive/*, $ */) {
+}( typeof window !== 'undefined' ? window : this, function ( Ractive/*, $ */ ) {
 
 	'use strict';
 
@@ -298,17 +298,17 @@ var addableDecorator = (function (global, factory) {
 		sourceKeypath = storage.keypath.str || storage.keypath; // 0.7.3?  could hit other properties for already parsed
 
 		// this decorator only works with array members!
-		lastDotIndex = sourceKeypath.lastIndexOf('.');
+		lastDotIndex = sourceKeypath.lastIndexOf( '.' );
 
-		if (lastDotIndex === -1) {
-			throw new Error(errorMessage);
+		if ( lastDotIndex === -1 ) {
+			throw new Error( errorMessage );
 		}
 
-		sourceArray = sourceKeypath.substr(0, lastDotIndex);
-		sourceIndex = +(sourceKeypath.substring(lastDotIndex + 1));
+		sourceArray = sourceKeypath.substr( 0, lastDotIndex );
+		sourceIndex = +( sourceKeypath.substring( lastDotIndex + 1 ) );
 
-		if (isNaN(sourceIndex)) {
-			throw new Error(errorMessage);
+		if ( isNaN( sourceIndex ) ) {
+			throw new Error( errorMessage );
 		}
 
 		log('adding', sourceArray, sourceIndex, sourceKeypath);
@@ -368,6 +368,6 @@ var addableDecorator = (function (global, factory) {
 }));
 
 // Common JS (i.e. browserify) environment
-if (typeof module !== 'undefined' && module.exports) {
+if ( typeof module !== 'undefined' && module.exports) {
 	module.exports = addableDecorator;
 }
