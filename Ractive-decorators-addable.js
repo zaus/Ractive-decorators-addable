@@ -3,7 +3,7 @@
 	Ractive-decorators-addable
 	===========================
 
-	Version <%= VERSION %>.
+	Version 0.1.3
 
 	This plugin adds a 'addable' decorator to Ractive, which enables
 	elements that correspond to array members to be added and removed.
@@ -41,6 +41,21 @@
 	      template: myTemplate,
 	      data: { list: [ 'Firefox', 'Chrome', 'Internet Explorer', 'Opera', 'Safari', 'Maxthon' ] }
 	    });
+
+	Or with inline configuration:
+
+	    <ul>
+	    	{{#list}}
+	    	<li decorator='multi:{ sortable:true, addable:{ clone: ?callback, elementName: "<a><i></i></a>", addText: "", remText: "", allAdd: true, addStyle: "inner" } }'>
+	    	{{/list}
+	    </ul>
+
+	Or with global configuration:
+
+	    Ractive.decorators.addable.elementName = '<a><i></i></a>';
+	    Ractive.decorators.addable.addText = '';
+	    Ractive.decorators.addable.remText = '';
+
 */
 
 var addableDecorator = (function ( global, factory ) {
@@ -99,7 +114,7 @@ var addableDecorator = (function ( global, factory ) {
 
 		// maybe only one add button
 		if (options.allAdd || !parent._addable) {
-			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass, options.addTitle);
+			btnAdd = btnCreate(options.elementName, node, addHandler, options.addText, options.addClass, options.addTitle, options);
 			
 			styleAdd(options.addStyle || 'append', btnAdd, node, parent);
 		}
@@ -110,19 +125,19 @@ var addableDecorator = (function ( global, factory ) {
 			parent._addable = true;
 		}
 
-		btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass);
+		btnRemove = btnCreate(options.elementName, node, remHandler, options.remText, options.remClass, options.remTitle);
 
 		// try to append, otherwise add
 		styleAdd(options.remStyle, btnRemove, node, parent);
-		
+
 		return {
 			teardown: function () {
-				btnRemove.removeEventListener('click', remHandler, false);
-				btnAdd.removeEventListener('click', addHandler, false);
+				btnRemove.removeEventListener('click', remHandler, false); // TODO: actually remove the handler fn?  do we even need to if btnRemove is deleted?
 
 				//node.removeChild(btnRemove); // already gone by this point
 				// TODO: how to handle the last one?  i.e. how to handle the add button
 				/*
+				btnAdd.removeEventListener('click', addHandler, false);
 				btnAdd.parentNode.removeChild(btnAdd);
 
 				node.parentNode.className = node.parentNode.className.replace(' ' + options.className, '');
@@ -135,16 +150,61 @@ var addableDecorator = (function ( global, factory ) {
 	addable.className = 'addable';
 
 	addable.elementName = 'span';
-	addable.addText = 'Add';
+	addable.addTitle = addable.addText = 'Add';
 	addable.addClass = 'btn add';
-	addable.addStyle = 'prepend'; // append, prepend; copy? -- UI doesn't really respect this when no more elements left
-	addable.remText = 'Delete';
+	addable.addStyle = 'prepend'; // selector or 'append', 'prepend'; copy? -- UI doesn't really respect this when no more elements left
+	addable.remTitle = addable.remText = 'Delete';
 	addable.remClass = 'btn delete';
-	addable.remStyle = false; // inner|child,next|sibling
+	addable.remStyle = 'inner'; // selector or inner|child,next|sibling
 	addable.allAdd = false;
 
+	// style selector "hacks" for navigating up the DOM
+	addable.rootSelector = '$';
+	addable.parentSelector = '^';
+
+	// always return appropriately empty values
+	addable.clone = function (current) {
+		/// <summary>Return the appropriate empty/new values for each type.  Note that <c>this</c> should be bound to the clone function so we can recurse properly.</summary>
+		if (current === null || current === undefined) return current;
+
+		if (Array.isArray(current)) {
+			// TODO: preserve semblance of children?
+			for (var i = current.length-1; i >= 0; i--) {
+				current[i] = this(current[i]);
+			}
+			if (current.length > 0) return new Array(current.length);
+			else return [];
+		}
+		else if (typeof(current) === "object") {
+			// ensure we have a copy
+			current = utils_extend({}, current);
+			// clean out children
+			for (var k in current)
+				if (current.hasOwnProperty(k)) {
+					current[k] = this(current[k]);
+				}
+			return current;
+		}
+		// default data type should match
+		else return simpleDefaultVal(current);
+	}
+
+	function simpleDefaultVal(obj) {
+		// Handle simple types (primitives and plain function/object) -- http://stackoverflow.com/questions/14603106/default-value-of-a-type-in-javascript
+		switch (typeof obj) {
+			case 'boolean': return false;
+			case 'function': return function () { };
+			case 'null': return null;
+			case 'number': return 0;
+			case 'object': return {};
+			case 'string': return "";
+			case 'symbol': return Symbol();
+			case 'undefined': return void 0;
+		}
+	}
+
 	//#region ----- utilities ----------
-	btnCreate = function (el, node, handler, text, clss) {
+	btnCreate = function (el, node, handler, text, clss, title, options) {
 
 		// from html -- http://stackoverflow.com/a/494348/1037948
 		var btn;
@@ -155,9 +215,10 @@ var addableDecorator = (function ( global, factory ) {
 		}
 		else btn = document.createElement(el);
 
-		btn.addEventListener('click', autoHandler(node, handler), false);
+		btn.addEventListener('click', autoHandler(node, handler, options), false);
 		btn.innerHTML += text;
 		btn.className = clss;
+		btn.title = title || text;
 		return btn;
 	}
 	styleAdd = function (style, newNode, node, parent) {
@@ -168,7 +229,7 @@ var addableDecorator = (function ( global, factory ) {
 		/// <param name="newNode">The node to insert</param>
 		/// <param name="node">The source node</param>
 		/// <param name="parent">The <paramref name="node"/>'s parent</param>
-		
+
 		switch (style) {
 			case 'append':
 				parent.appendChild(btnAdd);
@@ -181,8 +242,23 @@ var addableDecorator = (function ( global, factory ) {
 				else parent.appendChild(newNode);
 				break;
 			case 'inner':
-			default:
 				node.appendChild(newNode);
+				break;
+			// any selector
+			default:
+				// root "selector" hack
+				if(style.charAt(0) == addable.rootSelector) {
+					style = style.substring(1);
+					node = document;
+				}
+				// parent "selector" hack
+				else while (style.charAt(0) == addable.parentSelector) {
+					style = style.substring(1);
+					node = node.parentNode;
+				}
+				var found = node.querySelector(style);
+				if (!found) throw new Error("Couldn't locate decorator addable 'style' (" + style + ") to attach to in `node`");
+				found.appendChild(newNode);
 				break;
 		}
 	}
@@ -209,14 +285,14 @@ var addableDecorator = (function ( global, factory ) {
 		if (!console || !console.log) return;
 		console.log.apply(console, arguments);
 	}
-	autoHandler = function(node, handler) {
-		return function(event) { return handler.apply(node, [event]); }
+	autoHandler = function(node, handler, options) {
+		return function(event) { return handler.apply(node, [event, options]); }
 	}
 	//#endregion ----- utilities ----------
 
 	errorMessage = 'The addable decorator only works with elements that correspond to array members';
 
-	addHandler = function ( event ) {
+	addHandler = function ( event, options ) {
 		var storage = this._ractive, lastDotIndex;
 
 		sourceKeypath = storage.keypath.str || storage.keypath; // 0.7.3?  could hit other properties for already parsed
@@ -244,16 +320,16 @@ var addableDecorator = (function ( global, factory ) {
 		var current = ractive.get(sourceKeypath);
 
 		// make a copy of current
-		if (Array.isArray(current)) current = [];
-		else if(typeof(current) === "object") current = utils_extend({}, current);
+		var clone = !options || !options.clone ? addable.clone : options.clone;
 
-		if (Array.isArray(source)) ractive.splice(sourceArray, sourceIndex, 0, current);
+		// apply clone to itself so we can access the clone function as 'this'
+		if (Array.isArray(source)) ractive.splice(sourceArray, sourceIndex, 0, clone.call(clone, current));
 		else {
-			source[sourceIndex + 1] = current;
+			source[sourceIndex + 1] = clone.call(clone, current);
 			ractive.update(); // because we changed the data directly
 		}
 	};
-	remHandler = function (event) {
+	remHandler = function (event, options) {
 		var storage = this._ractive, lastDotIndex;
 
 		sourceKeypath = storage.keypath.str || storage.keypath;
@@ -285,7 +361,7 @@ var addableDecorator = (function ( global, factory ) {
 			ractive.update(); // because we changed the data directly
 		}
 	};
-	
+
 	// expose
 	Ractive.decorators.addable = addable;
 	return addable;
